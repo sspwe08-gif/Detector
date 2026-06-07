@@ -2,129 +2,185 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spike Forecast Analyzer</title>
-
 <style>
+*{box-sizing:border-box;margin:0;padding:0;}
 body{
-    background:#0f1115;
-    color:#fff;
-    font-family:Arial,sans-serif;
-    padding:30px;
+  background:#0f1115;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  padding:30px;
 }
 .container{max-width:1200px;margin:auto;}
 h1{text-align:center;margin-bottom:25px;}
 table{width:100%;border-collapse:collapse;margin-bottom:20px;}
 th,td{border:1px solid #444;padding:10px;text-align:center;}
 input{width:90%;padding:5px;text-align:center;}
-button{display:block;margin:20px auto;padding:10px 20px;background:#1e90ff;border:none;color:#fff;font-size:16px;cursor:pointer;border-radius:5px;}
+button{
+  display:block;
+  margin:20px auto;
+  padding:10px 20px;
+  background:#1e90ff;
+  border:none;
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+  border-radius:5px;
+}
 button:hover{background:#0077cc;}
 #results{margin-top:20px;}
+.low{color:#4caf50;}
+.med{color:#ff9800;}
+.high{color:#f44336;}
+.purple{color:#9c27b0;}
+.blue{color:#2196f3;}
+.pink{color:#e91e63;font-weight:bold;}
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📈 Spike Forecast Analyzer</h1>
+  <h1>📈 Spike Forecast Analyzer</h1>
 
-<table>
+  <table>
     <tr><th>Time</th><th>Spike</th></tr>
     <tr><td><input id="t1" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)" onkeyup="fillTimes()"></td><td><input id="s1" type="number" step="0.01"></td></tr>
     <tr><td><input id="t2" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s2" type="number" step="0.01"></td></tr>
     <tr><td><input id="t3" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s3" type="number" step="0.01"></td></tr>
     <tr><td><input id="t4" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s4" type="number" step="0.01"></td></tr>
     <tr><td><input id="t5" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s5" type="number" step="0.01"></td></tr>
-</table>
+  </table>
 
-<button onclick="generateForecast()">Generate Forecast</button>
-<div id="results"></div>
+  <button onclick="generateForecast()">Generate Forecast</button>
+  <div id="results"></div>
 </div>
 
 <script>
 function autoColon(input){
-    let value = input.value.replace(/\D/g,'');
-    if(value.length > 4) value = value.substring(0,4);
-    if(value.length >= 3){
-        value = value.substring(0,2) + ":" + value.substring(2);
-    }
-    input.value = value;
+  let v=input.value.replace(/\D/g,'');
+  if(v.length>4) v=v.substring(0,4);
+  if(v.length>=3) v=v.substring(0,2)+":"+v.substring(2);
+  input.value=v;
 }
-
-function parseTime(time){
-    const p = time.split(":");
-    if(p.length !== 2) return null;
-    const h = Number(p[0]), m = Number(p[1]);
-    if(isNaN(h)||isNaN(m)||h<0||h>23||m<0||m>59) return null;
-    return {h,m};
+function parseTime(t){
+  const p=t.split(":");
+  if(p.length!==2) return null;
+  const h=Number(p[0]), m=Number(p[1]);
+  if(isNaN(h)||isNaN(m)||h<0||h>23||m<0||m>59) return null;
+  return {h,m};
 }
-
 function fillTimes(){
-    const first = document.getElementById("t1").value;
-    const parsed = parseTime(first);
-    if(!parsed) return;
-    for(let i=2;i<=5;i++){
-        let totalMinutes = parsed.m+(i-1);
-        let h = parsed.h+Math.floor(totalMinutes/60);
-        let m = totalMinutes%60;
-        document.getElementById("t"+i).value =
-            String(h%24).padStart(2,'0')+":"+String(m).padStart(2,'0');
-    }
+  const first=document.getElementById("t1").value;
+  const parsed=parseTime(first);
+  if(!parsed) return;
+  for(let i=2;i<=5;i++){
+    let total=parsed.m+(i-1);
+    let h=parsed.h+Math.floor(total/60);
+    let m=total%60;
+    document.getElementById("t"+i).value=String(h%24).padStart(2,'0')+":"+String(m).padStart(2,'0');
+  }
+}
+function format(h,m){
+  if(m>=60){h+=Math.floor(m/60);m%=60;}
+  h=h%24;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
+// --- Volatility analysis ---
+function analyze(spikes){
+  if(spikes.length===0) return "med";
+  let avg=spikes.reduce((a,b)=>a+b,0)/spikes.length;
+  if(avg<2) return "low";
+  if(avg<5) return "med";
+  return "high";
+}
+function nextVol(current){
+  const r=Math.random();
+  if(current==="high"){
+    if(r<0.5) return "high";
+    if(r<0.8) return "med";
+    return "low";
+  }
+  if(current==="med"){
+    if(r<0.4) return "med";
+    if(r<0.7) return "high";
+    return "low";
+  }
+  if(r<0.5) return "low";
+  if(r<0.85) return "med";
+  return "high";
+}
+
+// --- Range generator with purple/blue build logic ---
+function makeRange(vol, history){
+  let purpleCount = history.filter(s => s >= 2 && s < 10).length;
+  let blueCount = history.filter(s => s >= 1 && s < 2).length;
+
+  let min, max, label="";
+  if(vol==="low"){
+    min=(1+Math.random()*1).toFixed(2);
+    max=(2+Math.random()*1).toFixed(2);
+    label="blue";
+  } else if(vol==="med"){
+    min=(2+Math.random()*2).toFixed(2);
+    max=(8+Math.random()*4).toFixed(2);
+    label="purple";
+  } else {
+    min=(5+Math.random()*5).toFixed(2);
+    max=(20+Math.random()*20).toFixed(2);
+    label="high";
+  }
+
+  // Build effect: purple or blue spikes can trigger pink
+  if(purpleCount > 3 || blueCount > 2){
+    if(Math.random() < 0.4){ // 40% chance
+      min=(10+Math.random()*5).toFixed(2);
+      max=(20+Math.random()*30).toFixed(2);
+      label="pink";
+    }
+  }
+  return {range:`${min}x – ${max}x`, label};
+}
+
+// --- Forecast generator ---
 function generateForecast(){
-    const points=[];
-    for(let i=1;i<=5;i++){
-        const time=document.getElementById("t"+i).value;
-        const spike=parseFloat(document.getElementById("s"+i).value);
-        const parsed=parseTime(time);
-        if(parsed&&!isNaN(spike)){
-            const totalMinutes=parsed.h*60+parsed.m;
-            points.push({t:totalMinutes,s:spike});
-        }
-    }
-    if(points.length<2){
-        document.getElementById("results").innerHTML="Need at least 2 valid points";
-        return;
-    }
-    points.sort((a,b)=>a.t-b.t);
+  const spikes=[];
+  for(let i=1;i<=5;i++){
+    const s=parseFloat(document.getElementById("s"+i).value);
+    if(!isNaN(s)) spikes.push(s);
+  }
+  if(spikes.length<1){
+    document.getElementById("results").innerHTML="Enter at least 1 spike value";
+    return;
+  }
 
-    let slopes=[];
-    for(let i=1;i<points.length;i++){
-        let dt=points[i].t-points[i-1].t;
-        let ds=points[i].s-points[i-1].s;
-        if(dt!==0) slopes.push(ds/dt);
-    }
-    let avgSlope=slopes.reduce((a,b)=>a+b,0)/slopes.length;
-    let last=points[points.length-1];
+  let history=JSON.parse(localStorage.getItem("spikes")||"[]");
+  history=history.concat(spikes);
+  localStorage.setItem("spikes",JSON.stringify(history));
 
-    let output="<h3>Predicted Spikes (Next 10 min)</h3><ul>";
+  let currentVol=analyze(history);
+  let lastTime=parseTime(document.getElementById("t5").value)||parseTime(document.getElementById("t1").value);
+  let output="<h3>📡 Future Windows</h3>";
+  output+=`<p>Total Stored Spikes: ${history.length}</p>`;
+  output+=`<p>Pattern: <b class="${currentVol}">${currentVol.toUpperCase()}</b></p>`;
 
-    for(let i=1;i<=10;i++){
-        let futureTime=last.t+i;
-        let predictedSpike=last.s+(avgSlope*i);
+  for(let i=1;i<=5;i++){
+    currentVol=nextVol(currentVol);
+    let h=lastTime.h;
+    let m=lastTime.m+(i*2);
+    let start=format(h,m);
+    let end=format(h,m+2);
+    let prediction=makeRange(currentVol, history);
+    output+=`<p class="${prediction.label}">Window ${i}: <span class="range">${prediction.range}</span><br>Time: ${start} – ${end}</p>`;
+  }
 
-        // Clamp between 1.00 and 200.00
-        if(predictedSpike<1.00) predictedSpike=1.00;
-        if(predictedSpike>200.00) predictedSpike=200.00;
-
-        // Add realistic jitter range ±0.20
-        let minRange=Math.max(1.00,predictedSpike-0.20);
-        let maxRange=Math.min(200.00,predictedSpike+0.20);
-
-        let h=Math.floor(futureTime/60);
-        let m=futureTime%60;
-        let startTime=String(h%24).padStart(2,'0')+":"+String(m).padStart(2,'0');
-        let endTime=String(h%24).padStart(2,'0')+":"+String((m+59)%60).padStart(2,'0');
-
-        output+=`<li>${startTime}-${endTime} → ${predictedSpike.toFixed(2)} (range ${minRange.toFixed(2)}–${maxRange.toFixed(2)})</li>`;
-    }
-
-    output+="</ul>";
-    document.getElementById("results").innerHTML=output;
+  document.getElementById("results").innerHTML=output;
 }
 </script>
 
 </body>
 </html>
+
+
 
 
