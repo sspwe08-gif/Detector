@@ -6,66 +6,20 @@
 <title>Spike Forecast Analyzer</title>
 
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
 body{
     background:#0f1115;
     color:#fff;
     font-family:Arial,sans-serif;
     padding:30px;
 }
-
-.container{
-    max-width:1200px;
-    margin:auto;
-}
-
-h1{
-    text-align:center;
-    margin-bottom:25px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-bottom:20px;
-}
-
-th,td{
-    border:1px solid #444;
-    padding:10px;
-    text-align:center;
-}
-
-input{
-    width:90%;
-    padding:5px;
-    text-align:center;
-}
-
-button{
-    display:block;
-    margin:20px auto;
-    padding:10px 20px;
-    background:#1e90ff;
-    border:none;
-    color:#fff;
-    font-size:16px;
-    cursor:pointer;
-    border-radius:5px;
-}
-
-button:hover{
-    background:#0077cc;
-}
-
-#results{
-    margin-top:20px;
-}
+.container{max-width:1200px;margin:auto;}
+h1{text-align:center;margin-bottom:25px;}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+th,td{border:1px solid #444;padding:10px;text-align:center;}
+input{width:90%;padding:5px;text-align:center;}
+button{display:block;margin:20px auto;padding:10px 20px;background:#1e90ff;border:none;color:#fff;font-size:16px;cursor:pointer;border-radius:5px;}
+button:hover{background:#0077cc;}
+#results{margin-top:20px;}
 </style>
 </head>
 <body>
@@ -74,31 +28,12 @@ button:hover{
     <h1>📈 Spike Forecast Analyzer</h1>
 
 <table>
-    <tr>
-        <th>Time</th>
-        <th>Spike</th>
-    </tr>
-
-    <tr>
-        <td><input id="t1" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)" onkeyup="fillTimes()"></td>
-        <td><input id="s1" type="number" step="0.01"></td>
-    </tr>
-    <tr>
-        <td><input id="t2" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td>
-        <td><input id="s2" type="number" step="0.01"></td>
-    </tr>
-    <tr>
-        <td><input id="t3" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td>
-        <td><input id="s3" type="number" step="0.01"></td>
-    </tr>
-    <tr>
-        <td><input id="t4" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td>
-        <td><input id="s4" type="number" step="0.01"></td>
-    </tr>
-    <tr>
-        <td><input id="t5" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td>
-        <td><input id="s5" type="number" step="0.01"></td>
-    </tr>
+    <tr><th>Time</th><th>Spike</th></tr>
+    <tr><td><input id="t1" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)" onkeyup="fillTimes()"></td><td><input id="s1" type="number" step="0.01"></td></tr>
+    <tr><td><input id="t2" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s2" type="number" step="0.01"></td></tr>
+    <tr><td><input id="t3" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s3" type="number" step="0.01"></td></tr>
+    <tr><td><input id="t4" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s4" type="number" step="0.01"></td></tr>
+    <tr><td><input id="t5" placeholder="HH:MM" maxlength="5" oninput="autoColon(this)"></td><td><input id="s5" type="number" step="0.01"></td></tr>
 </table>
 
 <button onclick="generateForecast()">Generate Forecast</button>
@@ -118,9 +53,8 @@ function autoColon(input){
 function parseTime(time){
     const p = time.split(":");
     if(p.length !== 2) return null;
-    const h = Number(p[0]);
-    const m = Number(p[1]);
-    if(isNaN(h) || isNaN(m) || h<0 || h>23 || m<0 || m>59) return null;
+    const h = Number(p[0]), m = Number(p[1]);
+    if(isNaN(h)||isNaN(m)||h<0||h>23||m<0||m>59) return null;
     return {h,m};
 }
 
@@ -129,69 +63,68 @@ function fillTimes(){
     const parsed = parseTime(first);
     if(!parsed) return;
     for(let i=2;i<=5;i++){
-        let totalMinutes = parsed.m + (i-1);
-        let h = parsed.h + Math.floor(totalMinutes/60);
-        let m = totalMinutes % 60;
+        let totalMinutes = parsed.m+(i-1);
+        let h = parsed.h+Math.floor(totalMinutes/60);
+        let m = totalMinutes%60;
         document.getElementById("t"+i).value =
-            String(h%24).padStart(2,'0') + ":" + String(m).padStart(2,'0');
+            String(h%24).padStart(2,'0')+":"+String(m).padStart(2,'0');
     }
-}
-
-function formatTime(h,m){
-    while(m>=60){ h++; m-=60; }
-    h = h%24;
-    return String(h).padStart(2,'0') + ":" + String(m).padStart(2,'0');
 }
 
 function generateForecast(){
-    const points = [];
+    const points=[];
     for(let i=1;i<=5;i++){
-        const time = document.getElementById("t"+i).value;
-        const spike = parseFloat(document.getElementById("s"+i).value);
-        const parsed = parseTime(time);
-        if(parsed && !isNaN(spike)){
-            const totalMinutes = parsed.h*60 + parsed.m;
-            points.push({t:totalMinutes, s:spike});
+        const time=document.getElementById("t"+i).value;
+        const spike=parseFloat(document.getElementById("s"+i).value);
+        const parsed=parseTime(time);
+        if(parsed&&!isNaN(spike)){
+            const totalMinutes=parsed.h*60+parsed.m;
+            points.push({t:totalMinutes,s:spike});
         }
     }
-
-    if(points.length < 2){
-        document.getElementById("results").innerHTML = "Need at least 2 valid points";
+    if(points.length<2){
+        document.getElementById("results").innerHTML="Need at least 2 valid points";
         return;
     }
-
     points.sort((a,b)=>a.t-b.t);
 
     let slopes=[];
     for(let i=1;i<points.length;i++){
-        let dt = points[i].t - points[i-1].t;
-        let ds = points[i].s - points[i-1].s;
+        let dt=points[i].t-points[i-1].t;
+        let ds=points[i].s-points[i-1].s;
         if(dt!==0) slopes.push(ds/dt);
     }
+    let avgSlope=slopes.reduce((a,b)=>a+b,0)/slopes.length;
+    let last=points[points.length-1];
 
-    let avgSlope = slopes.reduce((a,b)=>a+b,0)/slopes.length;
-    let last = points[points.length-1];
-
-    let output = "<h3>Predicted Spikes (Next 10 min)</h3><ul>";
+    let output="<h3>Predicted Spikes (Next 10 min)</h3><ul>";
 
     for(let i=1;i<=10;i++){
-        let futureTime = last.t+i;
-        let predictedSpike = last.s + (avgSlope*i);
+        let futureTime=last.t+i;
+        let predictedSpike=last.s+(avgSlope*i);
 
-        // ✅ Clamp values between 1.00 and 200.00
-        if(predictedSpike < 1.00) predictedSpike = 1.00;
-        if(predictedSpike > 200.00) predictedSpike = 200.00;
+        // Clamp between 1.00 and 200.00
+        if(predictedSpike<1.00) predictedSpike=1.00;
+        if(predictedSpike>200.00) predictedSpike=200.00;
 
-        let h = Math.floor(futureTime/60);
-        let m = futureTime%60;
-        output += `<li>${String(h%24).padStart(2,'0')}:${String(m).padStart(2,'0')} → ${predictedSpike.toFixed(2)}</li>`;
+        // Add realistic jitter range ±0.20
+        let minRange=Math.max(1.00,predictedSpike-0.20);
+        let maxRange=Math.min(200.00,predictedSpike+0.20);
+
+        let h=Math.floor(futureTime/60);
+        let m=futureTime%60;
+        let startTime=String(h%24).padStart(2,'0')+":"+String(m).padStart(2,'0');
+        let endTime=String(h%24).padStart(2,'0')+":"+String((m+59)%60).padStart(2,'0');
+
+        output+=`<li>${startTime}-${endTime} → ${predictedSpike.toFixed(2)} (range ${minRange.toFixed(2)}–${maxRange.toFixed(2)})</li>`;
     }
 
-    output += "</ul>";
-    document.getElementById("results").innerHTML = output;
+    output+="</ul>";
+    document.getElementById("results").innerHTML=output;
 }
 </script>
 
 </body>
 </html>
+
 
