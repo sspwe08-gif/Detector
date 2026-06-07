@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Spike Forecast Analyzer</title>
+<title>L.G.M Spike Forecast Analyzer</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
@@ -160,20 +160,24 @@ function generateForecast(){
 
   let currentVol=analyze(history);
   let lastTime=parseTime(document.getElementById("t5").value)||parseTime(document.getElementById("t1").value);
+
   let output="<h3>📡 Future Windows</h3>";
   output+=`<p>Total Stored Spikes: ${history.length}</p>`;
   output+=`<p>Pattern: <b class="${currentVol}">${currentVol.toUpperCase()}</b></p>`;
 
+  output+="<table><tr><th>Window</th><th>Time Range</th><th>Prediction</th></tr>";
+
   for(let i=1;i<=5;i++){
     currentVol=nextVol(currentVol);
     let h=lastTime.h;
-    let m=lastTime.m+(i*2);
+    let m=lastTime.m+i; // 1-minute range
     let start=format(h,m);
-    let end=format(h,m+2);
+    let end=format(h,m+1);
     let prediction=makeRange(currentVol, history);
-    output+=`<p class="${prediction.label}">Window ${i}: <span class="range">${prediction.range}</span><br>Time: ${start} – ${end}</p>`;
+    output+=`<tr class="${prediction.label}"><td>${i}</td><td>${start} – ${end}</td><td>${prediction.range}</td></tr>`;
   }
 
+  output+="</table>";
   document.getElementById("results").innerHTML=output;
 }
 </script>
