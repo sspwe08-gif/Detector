@@ -206,7 +206,26 @@ function formatTime(h,m){
         + String(m).padStart(2,'0')
     );
 }
+function generateForecast(){
 
+    const results = document.getElementById("results");
+
+    let output = "<h3>Forecast Output</h3><ul>";
+
+    for(let i = 1; i <= 5; i++){
+
+        const time = document.getElementById("t" + i).value;
+        const spike = document.getElementById("s" + i).value;
+
+        if(time && spike){
+            output += `<li>${time} → Spike: ${spike}</li>`;
+        }
+    }
+
+    output += "</ul>";
+
+    results.innerHTML = output;
+}
 </script>
 
 </body>
