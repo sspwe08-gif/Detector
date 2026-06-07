@@ -205,6 +205,69 @@ function formatTime(h,m){
         + ":"
         + String(m).padStart(2,'0')
     );
+}function generateForecast(){
+
+    const points = [];
+
+    for(let i = 1; i <= 5; i++){
+
+        const time = document.getElementById("t" + i).value;
+        const spike = parseFloat(document.getElementById("s" + i).value);
+
+        const parsed = parseTime(time);
+
+        if(parsed && !isNaN(spike)){
+            const totalMinutes = parsed.h * 60 + parsed.m;
+            points.push({t: totalMinutes, s: spike});
+        }
+    }
+
+    if(points.length < 2){
+        document.getElementById("results").innerHTML =
+            "Need at least 2 valid points";
+        return;
+    }
+
+    // sort by time
+    points.sort((a,b) => a.t - b.t);
+
+    // calculate average slope (spike change per minute)
+    let slopes = [];
+
+    for(let i = 1; i < points.length; i++){
+        let dt = points[i].t - points[i-1].t;
+        let ds = points[i].s - points[i-1].s;
+
+        if(dt !== 0){
+            slopes.push(ds / dt);
+        }
+    }
+
+    let avgSlope =
+        slopes.reduce((a,b)=>a+b,0) / slopes.length;
+
+    let last = points[points.length - 1];
+
+    // predict next 10 minutes
+    let output = "<h3>Predicted Spikes (Next 10 min)</h3><ul>";
+
+    for(let i = 1; i <= 10; i++){
+
+        let futureTime = last.t + i;
+
+        let predictedSpike =
+            last.s + (avgSlope * i);
+
+        let h = Math.floor(futureTime / 60);
+        let m = futureTime % 60;
+
+        output += `<li>${String(h%24).padStart(2,'0')}:${String(m).padStart(2,'0')}
+        → ${predictedSpike.toFixed(2)}</li>`;
+    }
+
+    output += "</ul>";
+
+    document.getElementById("results").innerHTML = output;
 }
 function generateForecast(){
 
