@@ -52,6 +52,7 @@ button:hover{background:#0077cc;}
   </table>
 
   <button onclick="generateForecast()">Generate Forecast</button>
+  <button onclick="clearHistory()" style="background:#f44336;">Delete History</button>
   <div id="results"></div>
 </div>
 
@@ -180,10 +181,17 @@ function generateForecast(){
   output+="</table>";
   document.getElementById("results").innerHTML=output;
 }
+
+// --- Clear history ---
+function clearHistory(){
+  localStorage.removeItem("spikes");
+  document.getElementById("results").innerHTML="<p style='color:#f44336;'>History cleared.</p>";
+}
 </script>
 
 </body>
 </html>
+
 
 
 
