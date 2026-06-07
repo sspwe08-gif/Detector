@@ -37,37 +37,71 @@ h1{
 <div class="container">
     <h1>📈 Spike Forecast Analyzer</h1>
 
-    <table>
-        <tr>
-            <th>Time</th>
-            <th>Spike</th>
-        </tr>
+    
+        
+<table>
+    <tr>
+        <th>Time</th>
+        <th>Spike</th>
+    </tr>
 
-        <tr>
-            <td><input id="t1" placeholder="10:44"></td>
-            <td><input id="s1" type="number" step="0.01"></td>
-        </tr>
+    <tr>
+        <td>
+            <input
+            id="t1"
+            placeholder="HH:MM"
+            maxlength="5"
+            oninput="autoColon(this)"
+            onkeyup="fillTimes()">
+        </td>
+        <td><input id="s1" type="number" step="0.01"></td>
+    </tr>
 
-        <tr>
-            <td><input id="t2" placeholder="10:45"></td>
-            <td><input id="s2" type="number" step="0.01"></td>
-        </tr>
+    <tr>
+        <td>
+            <input
+            id="t2"
+            placeholder="HH:MM"
+            maxlength="5"
+            oninput="autoColon(this)">
+        </td>
+        <td><input id="s2" type="number" step="0.01"></td>
+    </tr>
 
-        <tr>
-            <td><input id="t3" placeholder="10:46"></td>
-            <td><input id="s3" type="number" step="0.01"></td>
-        </tr>
+    <tr>
+        <td>
+            <input
+            id="t3"
+            placeholder="HH:MM"
+            maxlength="5"
+            oninput="autoColon(this)">
+        </td>
+        <td><input id="s3" type="number" step="0.01"></td>
+    </tr>
 
-        <tr>
-            <td><input id="t4" placeholder="10:47"></td>
-            <td><input id="s4" type="number" step="0.01"></td>
-        </tr>
+    <tr>
+        <td>
+            <input
+            id="t4"
+            placeholder="HH:MM"
+            maxlength="5"
+            oninput="autoColon(this)">
+        </td>
+        <td><input id="s4" type="number" step="0.01"></td>
+    </tr>
 
-        <tr>
-            <td><input id="t5" placeholder="10:48"></td>
-            <td><input id="s5" type="number" step="0.01"></td>
-        </tr>
-    </table>
+    <tr>
+        <td>
+            <input
+            id="t5"
+            placeholder="HH:MM"
+            maxlength="5"
+            oninput="autoColon(this)">
+        </td>
+        <td><input id="s5" type="number" step="0.01"></td>
+    </tr>
+</table>
+       
 
     <button onclick="generateForecast()">
         Generate Forecast
@@ -77,7 +111,102 @@ h1{
 </div>
 
 <script>
-// JavaScript forecast logic here...
+    function autoColon(input){
+
+    let value = input.value.replace(/\D/g,'');
+
+    if(value.length > 4){
+        value = value.substring(0,4);
+    }
+
+    if(value.length >= 3){
+        value =
+            value.substring(0,2)
+            + ":"
+            + value.substring(2);
+    }
+
+    input.value = value;
+}
+
+function parseTime(time){
+
+    const p = time.split(":");
+
+    if(p.length !== 2)
+        return null;
+
+    const h = Number(p[0]);
+    const m = Number(p[1]);
+
+    if(
+        isNaN(h) ||
+        isNaN(m) ||
+        h < 0 ||
+        h > 23 ||
+        m < 0 ||
+        m > 59
+    ){
+        return null;
+    }
+
+    return {h,m};
+}
+
+function fillTimes(){
+
+    const first =
+        document.getElementById("t1").value;
+
+    const parsed =
+        parseTime(first);
+
+    if(!parsed) return;
+
+    for(let i=2;i<=5;i++){
+
+        let totalMinutes =
+            parsed.m + (i - 1);
+
+        let h =
+            parsed.h +
+            Math.floor(totalMinutes / 60);
+
+        let m =
+            totalMinutes % 60;
+
+        document.getElementById(
+            "t" + i
+        ).value =
+
+            String(h % 24)
+            .padStart(2,'0')
+
+            + ":"
+
+            +
+
+            String(m)
+            .padStart(2,'0');
+    }
+}
+
+function formatTime(h,m){
+
+    while(m >= 60){
+        h++;
+        m -= 60;
+    }
+
+    h = h % 24;
+
+    return (
+        String(h).padStart(2,'0')
+        + ":"
+        + String(m).padStart(2,'0')
+    );
+}
+
 </script>
 
 </body>
